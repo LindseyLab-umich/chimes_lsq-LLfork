@@ -178,22 +178,27 @@ def main():
             if DO_WEIGHTING: # Then it's OK to overwrite weightedA.  It is not used to calculate y (predicted forces) below.
                 U,D,VT = scipy.linalg.svd(weightedA,overwrite_a=True)
                 Dmat   = array((transpose(weightedA)))
-            else:            #  Then do not overwrite A.  It is used to calculate y (predicted forces) below.
+                dmax = 0.0
+                
+            elif args.hyper_sets == True :            #  Then do not overwrite A.  It is used to calculate y (predicted forces) below.
                 min_shape = min(A.shape)
                 k = min(max(1, min_shape // 10), min_shape)
                 U, D, VT = spla.svds(A, k=k)
                 Dmat = numpy.zeros((len(D), len(D)))
+                dmax = numpy.max(numpy.abs(D))
                 
-                # Previous Method
-                #U,D,VT = scipy.linalg.svd(A,overwrite_a=False)
-                # Dmat   = array((transpose(A)))  
+            else :   # Previous Method
+                U,D,VT = scipy.linalg.svd(A,overwrite_a=False)
+                Dmat   = array((transpose(A)))  
+                dmax = 0.0
+                
         except LinAlgError:
             sys.stderr.write("SVD algorithm failed")
             exit(1)
             
         # Process output
 
-        dmax = numpy.max(numpy.abs(D))
+        #dmax = numpy.max(numpy.abs(D))
 
         for i in range(0,len(Dmat)):
             if ( abs(D[i]) > dmax ) :
