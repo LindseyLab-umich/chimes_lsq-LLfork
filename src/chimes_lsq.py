@@ -285,6 +285,20 @@ def main():
         x = reg.coef_
         nvars = np
         print ("! Ridge alpha = %11.4e" % args.alpha)
+        
+    elif args.algorithm == 'fast_ridge':
+        print ('! fast ridge regression used')
+
+        ATA = A.T @ A
+        ATb = A.T @ b
+
+        ATA_reg = ATA.copy()
+        numpy.fill_diagonal(ATA_reg, ATA_reg.diagonal() + args.alpha)
+
+        x = numpy.linalg.solve(ATA_reg, ATb)
+        
+        nvars = np
+        print ("! Ridge alpha = %11.4e" % args.alpha)
 
     elif args.algorithm == 'ridgecv':
         alpha_ar = [1.0e-06, 3.2e-06, 1.0e-05, 3.2e-05, 1.0e-04, 3.2e-04, 1.0e-03, 3.2e-03]
@@ -818,7 +832,9 @@ def fit_dlars(dlasso_dlars_path, nodes, cores, alpha, split_files, algorithm, re
             if mpistyle == "srun": 
                 exepath = "srun -N " + str(nodes) + " -n " + str(cores) + " " + dlars_file
             elif mpistyle == "ibrun":
-                exepath = "ibrun" + " " + dlars_file  
+                exepath = "ibrun" + " " + dlars_file
+            elif mpistyle == "mpirun":
+                exepath = "mpirun" + " " + dlars_file  		  
             else:
                 print("Unrecognized mpistyle:",args.mpistyle,". Recognized options are srun or ibrun")
            
@@ -872,7 +888,6 @@ def fit_dlars(dlasso_dlars_path, nodes, cores, alpha, split_files, algorithm, re
 if __name__ == "__main__":
     main()
     
-
 
 
 

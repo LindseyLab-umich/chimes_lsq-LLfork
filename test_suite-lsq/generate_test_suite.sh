@@ -4,6 +4,13 @@
 # NOTE: Make sure the right compiler is specified in the Makefile... don't use MPI for lsq.
 #
 
+echo "Run by user       : `whoami`"      | tee  generate.log
+echo "Run on date       : `date`"        | tee -a generate.log
+echo "Run with command  : $0 $a"         | tee -a generate.log
+echo "Run on machine    : `uname -n`"    | tee -a generate.log
+echo "Run using hosttype: $hosttype"     | tee -a generate.log
+
+
 ###############################################################
 #
 # Determine the location of necessary files
@@ -50,7 +57,7 @@ elif [[ "$hosttype" == "JHU-ARCH" ]] ; then
     MPI=`which mpicxx`   
 elif [[ "$hosttype" == "UT-TACC" ]] ; then
     source ${TESTSU_BASE}/../modfiles/UT-TACC.mod
-    RUN_JOB="ibrun" 
+    RUN_JOB="ibrun -n $NP" 
 else
     echo ""
     echo "ERROR: Unknown hosttype ($hosttype) specified"
@@ -62,6 +69,9 @@ else
     echo "Or manually load modules and run with: ./this_script.sh"
     exit 0
 fi
+
+echo "Loaded modules    : `module list 2>&1 | awk '/Current/{getline; print}'`" | tee -a generate.log
+
 
 NUM_THREADS=$NP		# Number of threads for SVD decomposition
 export OMP_NUM_THREADS=$NUM_THREADS    
@@ -168,10 +178,9 @@ do
         
 	if [[ $SUCCESS -eq 1 ]] ; then
 	
-		# Break up  A.txt file into 95M chunks, i.e., < Github's 100M file size limit
-		# Then remove the big single A.txt file
-		
-		split -b95M A.txt A.txt.
+		# Break A.txt into <50M chunks for git; remove monolithic A.txt before commit
+		split -b49M A.txt A.txt.
+		rm -f A.txt
 	
  		 cp A.txt.* b.txt params.header fm_setup.out ff_groups.map ../correct_output
 	fi
@@ -195,6 +204,8 @@ do
 	fi
 
 	cd $i/current_output
+	
+	cat A.txt.* > A.txt
 	
 	
 	if $RUN_LSQ_PYTHON_CODE > params.txt ; then
