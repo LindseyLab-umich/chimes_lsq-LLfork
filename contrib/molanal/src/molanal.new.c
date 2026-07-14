@@ -377,7 +377,7 @@ int main(int argc, char** argv)
       z[j] = 0.0 ;
       q[j] = 0.0 ;
       rcomx[j] = -100.0 ;
-      rcomy[0] = -100.0 ;
+      rcomy[j] = -100.0 ;
       rcomz[j] = -100.0 ;
       type[j] = 0 ;
     }
